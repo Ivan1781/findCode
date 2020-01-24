@@ -1,5 +1,6 @@
 import requests
 import random
+import pdb
 
 
 # The function generates url
@@ -7,14 +8,27 @@ def get_url():
     names = ['Alex', 'John', 'Ivan', 'Petr', 'Nicol', 'Andr', 'Eugen']
     r_for_numb = random.randint(0, 100)
     r_for_name = random.randint(0, 6)
+    pdb.set_trace()
     str_for_url = names.pop(r_for_name) + str(r_for_numb)
     url = 'https://api.github.com/users/' + str_for_url + '/repos'
     return url
 
 
-def get_info_user():
-    user = requests.get(get_url())
-    return user
+# The function allows manually or automatically to receive an user
+# If args is empty then calling the function that automatically creates user url
+# Elif args has an value that is an url of user
+def get_info_user(*args):
+    if len(args) == 0:
+        url = get_url()
+        print(url)
+        user = requests.get(url)
+        pdb.set_trace()
+        return user
+    else:
+        url = args[0]
+        user1 = requests.get(url)
+        pdb.set_trace()
+        return user1
 
 
 # The main class method get_exist_user returns URL of existing and not empty user.
@@ -30,7 +44,7 @@ class Checker:
 
     # In case if it's necessary to define concrete URL manually
     def set_user(self, url):
-        self.__user = url
+        self.__user = get_info_user(url)
 
     # This is an auxiliary method for get_exist_user
     def __exist_user(self):
@@ -63,27 +77,27 @@ class Checker:
 
 
 # The class find and return file from user repositories
-class Finder:
-    def get_list_repo_user(self, url):
-        repos = []
-        user = get_info_user(url)
-
-        get_repositories = exist_user()
-
-        if len(get_repositories.text) == 2:
-            print("It's empty user")
-            get_all_repo_user(build_url_user())
-
-        r = get_repositories.json()
-        for a in r:
-            if type(a) is str:
-                print('-------------------------------------')
-                print(r)
-                print(a)
-                print("-----------------000---------------")
-            else:
-                name_of_repo = a.get('name')
-                repos.append(name_of_repo)
-        return repos
+# class Finder:
+#     def get_list_repo_user(self, url):
+#         repos = []
+#         user = get_info_user(url)
+#
+#         get_repositories = exist_user()
+#
+#         if len(get_repositories.text) == 2:
+#             print("It's empty user")
+#             get_all_repo_user(build_url_user())
+#
+#         r = get_repositories.json()
+#         for a in r:
+#             if type(a) is str:
+#                 print('-------------------------------------')
+#                 print(r)
+#                 print(a)
+#                 print("-----------------000---------------")
+#             else:
+#                 name_of_repo = a.get('name')
+#                 repos.append(name_of_repo)
+#         return repos
 
 
