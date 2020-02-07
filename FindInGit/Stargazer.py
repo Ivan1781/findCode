@@ -3,7 +3,7 @@ import pandas as pd
 import requests
 
 
-#The task of the class is to count the stars of the repositories, the list of which lies in
+# The task of the class is to count the stars of the repositories, the list of which lies in
 # the .csv file and add to this file a new column 'stars' containing the number of stars of
 # the repository
 # We send the path to the constructor to the file where the links to the gitHub repositories
@@ -48,13 +48,15 @@ class Stargazer:
             print(count)
             try:
                 r = requests.get(url, auth=self.__login_passwd)
-                if r.status_code > 399:
-                    raise Exception
+                if r.status_code == 404:
+                    raise requests.RequestException
+                elif r.status_code == 403:
+                    break
                 else:
                     jso = r.json()
                     star = jso.get('stargazers_count')
                     self.__list_of_star.append(star)
-            except Exception:
+            except requests.RequestException:
                 self.__list_of_star.append(-1)
                 df.iloc[count] = {'0': 'Not', '1': 'Not', '2': 'Not'}
             finally:
@@ -64,11 +66,17 @@ class Stargazer:
     # Record filled __list_of_star = [] containing the number
     # repository stars to the original csv file with repositories.
     def add_column_to_csv(self, df):
-        list_stars = self.__star_count(df)
+        # list_stars = self.__star_count(df)
         df['stars'] = self.__list_of_star
         try:
             df.to_csv(self.__path_to_file, index=False)
-        except Exception:
-            Exception.with_traceback()
+        except OSError:
             return 'Не удалось записать файл'
         return True
+
+
+es = Stargazer('G:/finder_in_github/ggg.csv')
+es.get_user('m9gadeth1994', 'ironmaiden20152015')
+df = es.get_file_csv()
+print(type(df))
+a = es.add_column_to_csv(df)
