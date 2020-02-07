@@ -74,9 +74,3 @@ class Stargazer:
             return 'Не удалось записать файл'
         return True
 
-
-es = Stargazer('G:/finder_in_github/ggg.csv')
-es.get_user('m9gadeth1994', 'ironmaiden20152015')
-df = es.get_file_csv()
-print(type(df))
-a = es.add_column_to_csv(df)
