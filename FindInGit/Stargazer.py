@@ -3,7 +3,7 @@ import pandas as pd
 import requests
 
 
-# The task of the class is to count the stars of the repositories, the list of which lies in
+# The task of the class is to count  the stars of the repositories, the list of which lies in
 # the .csv file and add to this file a new column 'stars' containing the number of stars of
 # the repository
 # We send the path to the constructor to the file where the links to the gitHub repositories
@@ -21,9 +21,7 @@ class Stargazer:
     # and saves it in the __login_passwd field. This is then required to send an authorized
     # request to gitHub.
     def get_user(self, name, passw):
-        list_name_passw = []
-        list_name_passw.append(name)
-        list_name_passw.append(passw)
+        list_name_passw = [name, passw]
         self.__login_passwd = tuple(list_name_passw)
         return self.__login_passwd
 
@@ -31,10 +29,10 @@ class Stargazer:
     def get_file_csv(self):
         try:
             df = pd.read_csv(os.path.abspath(self.__path_to_file), header=None, error_bad_lines=False)
-        except Exception:
-            return 'File not found'
-        self.__length_of_column = df.shape[0]
-        return df
+            self.__length_of_column = df.shape[0]
+            return df
+        except FileNotFoundError:
+            return -1
 
     # The method receives a DataFrame, which is returned by the get_file_csv () method.
     # Next, the DataFrame is crawled. Requests are sent to the links contained in the dataFrame.
@@ -61,12 +59,16 @@ class Stargazer:
                 df.iloc[count] = {'0': 'Not', '1': 'Not', '2': 'Not'}
             finally:
                 count += 1
+        d = self.__length_of_column - len(self.__list_of_star)
+        while d > 0:
+            self.__list_of_star.append(-2)
+            d -= 1
         return self.__list_of_star
 
     # Record filled __list_of_star = [] containing the number
     # repository stars to the original csv file with repositories.
     def add_column_to_csv(self, df):
-        # list_stars = self.__star_count(df)
+        self.__star_count(df)
         df['stars'] = self.__list_of_star
         try:
             df.to_csv(self.__path_to_file, index=False)
@@ -75,8 +77,7 @@ class Stargazer:
         return True
 
 
-es = Stargazer('G:/finder_in_github/ggg.csv')
+es = Stargazer('G:/finder_in_github/gggG.csv')
 es.get_user('m9gadeth1994', 'ironmaiden20152015')
-df = es.get_file_csv()
-print(type(df))
-a = es.add_column_to_csv(df)
+f = es.get_file_csv()
+# a = es.add_column_to_csv(f)
