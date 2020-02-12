@@ -3,6 +3,9 @@ import pandas as pd
 import requests
 import csv
 from git import Repo
+import logging
+import sys
+import argparse
 
 
 # The task of the class is to count  the stars of the repositories, the list of which lies in
@@ -16,11 +19,19 @@ class Stargazer:
     __path_to_file = 0
     __login_passwd = 0
 
-    def list_of_star(self):
-        return self.__list_of_star
-
     def __init__(self, path):
         self.__path_to_file = path
+        self.logger = logging.getLogger('STARGAZER')
+        self.logger.setLevel(logging.INFO)
+        handler = logging.StreamHandler()
+        handler.setLevel(logging.INFO)
+        formatter = logging.Formatter('%(name)s - %(levelname)s - %(message)s')
+        handler.setFormatter(formatter)
+        self.logger.addHandler(handler)
+        self.logger.info('Instance of Stargazer is created')
+
+    def list_of_star(self):
+        return self.__list_of_star
 
     # The get_user() method receives user login and password, then returns tuple
     # and saves it in the __login_passwd field. This is then required to send an authorized
@@ -137,3 +148,29 @@ def garbage_deleter(dir_name):
                 os.chmod(file, 0o777)
                 os.remove(file)
     return list_files
+
+
+def main(path_to_file, user_name, user_passw, dir_name):
+    star = Stargazer(path_to_file)
+    star.get_user(user_name, user_passw)
+    df = star.get_file_csv()
+    star.star_count(df)
+    star.add_column_to_csv(df)
+    # dir_name = 'G://directory'
+    download_repo(path_to_file, dir_name)
+    garbage_deleter(dir_name)
+
+
+def create_parser():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('path_to_file', nargs='?')
+    parser.add_argument('user_name', nargs='?')
+    parser.add_argument('user_passw', nargs='?')
+    parser.add_argument('dir_name', nargs='?')
+    return parser
+
+
+if __name__ == '__main__':
+    parser = create_parser()
+    namespace = parser.parse_args(sys.argv[1:])
+    main(namespace.path_to_file, namespace.user_name, namespace.user_passw, namespace.dir_name)
