@@ -1,6 +1,6 @@
 import os
-import pandas as pd
 import requests
+import pandas as pd
 import csv
 from git import Repo
 import logging
@@ -38,6 +38,7 @@ class Stargazer:
     # request to gitHub.
     def get_user(self, name, passw):
         list_name_passw = [name, passw]
+        self.logger.info('user_name and password is defined')
         self.__login_passwd = tuple(list_name_passw)
 
     # The method returns a DataFrame that contains information from a file with a list of repositories
@@ -46,8 +47,10 @@ class Stargazer:
             df = pd.read_csv(os.path.abspath(self.__path_to_file), error_bad_lines=False, header=None,
                              index_col=False)
             self.__length_of_column = df.shape[0]
+            self.logger.info('The file is converted into data_frame')
             return df
         except IOError:
+            self.logger.exception('The convertion failed')
             return -1
 
     # The method receives a DataFrame, which is returned by the get_file_csv () method.
@@ -57,6 +60,7 @@ class Stargazer:
     def star_count(self, df):
         count = 0
         while count < self.__length_of_column:
+            self.logger.info('Counting of stars was started')
             if df[0][count] == '0' or df[0][count] == 'nan':
                 count += 1
                 continue
@@ -64,14 +68,18 @@ class Stargazer:
             try:
                 r = requests.get(url, auth=self.__login_passwd)
                 if r.status_code == 404:
+                    self.logger.warning('Status of question is 404')
                     raise requests.RequestException
                 elif r.status_code == 403:
+                    self.logger.warning('Status of question is 403. Request Limit Exceeded')
                     break
                 else:
+                    self.logger.info('The request is successful')
                     jso = r.json()
                     star = jso.get('stargazers_count')
                     self.__list_of_star.append(star)
             except requests.RequestException:
+                self.logger.exception('Repository was not found')
                 self.__list_of_star.append(-1)
                 not_complete = {}
                 for a in range(df.shape[1]):
@@ -89,9 +97,12 @@ class Stargazer:
     def add_column_to_csv(self, df):
         df[df.shape[1]] = self.__list_of_star
         try:
+            self.logger.warning('Adding a new star column to the source file')
             df.to_csv(self.__path_to_file, index=False, header=None)
+            self.logger.info('Adding star column was successful')
             return True
         except IOError:
+            self.logger.exception('Adding star column was failed')
             return -1
 
 
@@ -105,20 +116,23 @@ def transform_url(url):
 
 
 def download_repo(path_file_csv, to_path):
+    logging.info('Repositories download started')
     with open(os.path.abspath(path_file_csv), 'r', encoding='utf_8_sig') as file_repo:
         reader = csv.reader(file_repo)
         for row in reader:
             if 3 > int(row[len(row) - 1]) >= 0:
                 url = transform_url(row[0])
-                print(url)
+                logging.info(f'url of downloading repo is {url}')
                 name_repo = url.split('/')
                 repo = name_repo.pop(len(name_repo) - 1)
                 path1 = to_path + '/' + repo
-                print(path1)
                 try:
                     os.mkdir(path1)
+                    logging.warning(f'Download repo to {path1}')
                     repo = Repo.clone_from(url, path1)
+                    logging.info(f'Repo {path1} was created')
                 except Exception:
+                    logging.exception('Dowload a repo failed')
                     pass
             else:
                 pass
@@ -137,6 +151,7 @@ def get_list_of_files(dir_name):
 
 
 def garbage_deleter(dir_name):
+    logging.info('delete unnecessary files')
     list_files = get_list_of_files(dir_name)
     languages = ('.py', '.java', '.cpp', '.js', '.php', '.cs', '.rb', '.go')
     list_files = filter(lambda s: not s.endswith(languages), list_files)
