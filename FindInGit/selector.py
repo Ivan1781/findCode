@@ -139,6 +139,7 @@ def download_repo(path_file_csv, to_path):
         reader = csv.reader(file_repo)
         for row in reader:
             if 3 > int(row[len(row) - 1]) >= 0:
+                print('*************************************')
                 url = transform_url(row[0])
                 logging.info(f'url of downloading repo is {url}')
                 name_repo = url.split('/')
@@ -152,6 +153,7 @@ def download_repo(path_file_csv, to_path):
                 except Exception:
                     logging.exception('Downloading a repo failed')
                     pass
+                garbage_deleter(path1)
             else:
                 pass
 
@@ -180,6 +182,8 @@ def garbage_deleter(dir_name):
             except PermissionError:
                 os.chmod(file, 0o777)
                 os.remove(file)
+    logging.info('Deleting is ended')
+    print('*************************************')
     return list_files
 
 
@@ -193,21 +197,8 @@ def main():
     df = star.get_file_csv()
     star.star_count(df)
     star.add_column_to_csv(df)
-    # dir_name = 'G://directory'
     download_repo(path_to_file, dir_name)
-    garbage_deleter(dir_name)
-
-
-# def create_parser():
-#     parser = argparse.ArgumentParser()
-#     parser.add_argument('path_to_file', nargs='?')
-#     parser.add_argument('user_name', nargs='?')
-#     parser.add_argument('user_passw', nargs='?')
-#     parser.add_argument('dir_name', nargs='?')
-#     return parser
 
 
 if __name__ == '__main__':
-    # parser = create_parser()
-    # namespace = parser.parse_args(sys.argv[1:])
     main()
