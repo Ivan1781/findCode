@@ -4,6 +4,7 @@ import pandas as pd
 import csv
 from git import Repo
 import logging
+from getpass import getpass
 import sys
 import argparse
 
@@ -25,7 +26,7 @@ class Stargazer:
         self.logger.setLevel(logging.INFO)
         handler = logging.StreamHandler()
         handler.setLevel(logging.INFO)
-        formatter = logging.Formatter('%(name)s - %(levelname)s - %(message)s')
+        formatter = logging.Formatter('%(levelname)s : %(name)s : %(message)s')
         handler.setFormatter(formatter)
         self.logger.addHandler(handler)
         self.logger.info('Instance of Stargazer is created')
@@ -39,6 +40,7 @@ class Stargazer:
     def get_user(self, name, passw):
         list_name_passw = [name, passw]
         self.logger.info('user_name and password is defined')
+        self.logger.info(f'your password is {passw}')
         self.__login_passwd = tuple(list_name_passw)
 
     # The method returns a DataFrame that contains information from a file with a list of repositories
@@ -59,34 +61,42 @@ class Stargazer:
     # the value '-1' is set in the column 'stars'. All data is saved to the list __list_of_star = [].
     def star_count(self, df):
         count = 0
+        r = 0
+        self.logger.info('Counting of stars is starting')
         while count < self.__length_of_column:
-            self.logger.info('Counting of stars was started')
             if df[0][count] == '0' or df[0][count] == 'nan':
                 count += 1
                 continue
             url = df[0][count]
             try:
+                self.logger.info(f'The request to {url}')
                 r = requests.get(url, auth=self.__login_passwd)
                 if r.status_code == 404:
                     self.logger.warning('Status of question is 404')
                     raise requests.RequestException
-                elif r.status_code == 403:
-                    self.logger.warning('Status of question is 403. Request Limit Exceeded')
-                    break
+                elif r.status_code == 401 or r.status_code == 403:
+                    self.logger.warning('Status of question is 401 or 403. Server refuse to repspond')
+                    raise requests.RequestException
                 else:
                     self.logger.info('The request is successful')
                     jso = r.json()
                     star = jso.get('stargazers_count')
+                    self.logger.info(f'This repo has {star} stars')
                     self.__list_of_star.append(star)
             except requests.RequestException:
-                self.logger.exception('Repository was not found')
-                self.__list_of_star.append(-1)
-                not_complete = {}
-                for a in range(df.shape[1]):
-                    not_complete[a] = 'Not'
-                df.iloc[count] = not_complete
+                if r.status_code == 404:
+                    self.logger.exception('Repository was not found')
+                    self.__list_of_star.append(-1)
+                    not_complete = {}
+                    for a in range(df.shape[1]):
+                        not_complete[a] = 'Not'
+                    df.iloc[count] = not_complete
+                else:
+                    break
             finally:
+                self.logger.info(f'The star was added to list {self.__list_of_star}')
                 count += 1
+
         d = self.__length_of_column - len(self.__list_of_star)
         while d > 0:
             self.__list_of_star.append(-2)
@@ -99,6 +109,7 @@ class Stargazer:
         try:
             self.logger.warning('Adding a new star column to the source file')
             df.to_csv(self.__path_to_file, index=False, header=None)
+            self.logger.info(f'List of stars: {self.__list_of_star}')
             self.logger.info('Adding star column was successful')
             return True
         except IOError:
@@ -116,7 +127,14 @@ def transform_url(url):
 
 
 def download_repo(path_file_csv, to_path):
+    logging.basicConfig(level=logging.INFO)
     logging.info('Repositories download started')
+    if not os.path.exists(to_path):
+        try:
+            os.mkdir(to_path)
+            logging.info(f'The {to_path} directory was created')
+        except OSError:
+            logging.exception('Path to directory is not correct')
     with open(os.path.abspath(path_file_csv), 'r', encoding='utf_8_sig') as file_repo:
         reader = csv.reader(file_repo)
         for row in reader:
@@ -132,7 +150,7 @@ def download_repo(path_file_csv, to_path):
                     repo = Repo.clone_from(url, path1)
                     logging.info(f'Repo {path1} was created')
                 except Exception:
-                    logging.exception('Dowload a repo failed')
+                    logging.exception('Downloading a repo failed')
                     pass
             else:
                 pass
@@ -165,7 +183,11 @@ def garbage_deleter(dir_name):
     return list_files
 
 
-def main(path_to_file, user_name, user_passw, dir_name):
+def main():
+    path_to_file = input('Enter a path to file contains info about repos: ')
+    dir_name = input('Enter a path to folder where repos will be saved: ')
+    user_name = input('Enter gitHub user_login: ')
+    user_passw = input('Enter gitHub user_password: ')
     star = Stargazer(path_to_file)
     star.get_user(user_name, user_passw)
     df = star.get_file_csv()
@@ -176,16 +198,16 @@ def main(path_to_file, user_name, user_passw, dir_name):
     garbage_deleter(dir_name)
 
 
-def create_parser():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('path_to_file', nargs='?')
-    parser.add_argument('user_name', nargs='?')
-    parser.add_argument('user_passw', nargs='?')
-    parser.add_argument('dir_name', nargs='?')
-    return parser
+# def create_parser():
+#     parser = argparse.ArgumentParser()
+#     parser.add_argument('path_to_file', nargs='?')
+#     parser.add_argument('user_name', nargs='?')
+#     parser.add_argument('user_passw', nargs='?')
+#     parser.add_argument('dir_name', nargs='?')
+#     return parser
 
 
 if __name__ == '__main__':
-    parser = create_parser()
-    namespace = parser.parse_args(sys.argv[1:])
-    main(namespace.path_to_file, namespace.user_name, namespace.user_passw, namespace.dir_name)
+    # parser = create_parser()
+    # namespace = parser.parse_args(sys.argv[1:])
+    main()
