@@ -4,9 +4,7 @@ import pandas as pd
 import csv
 from git import Repo
 import logging
-from getpass import getpass
-import sys
-import argparse
+from transform_file import FileTransformer
 
 
 # The task of the class is to count  the stars of the repositories, the list of which lies in
@@ -32,7 +30,7 @@ class Stargazer:
         self.logger.info('Instance of Stargazer is created')
 
     def list_of_star(self):
-        return self.__list_of_star
+        return self.__list_of_star 
 
     # The get_user() method receives user login and password, then returns tuple
     # and saves it in the __login_passwd field. This is then required to send an authorized
@@ -171,6 +169,7 @@ def get_list_of_files(dir_name):
 
 
 def garbage_deleter(dir_name):
+    logging.basicConfig(level=logging.INFO)
     logging.info('delete unnecessary files')
     list_files = get_list_of_files(dir_name)
     languages = ('.py', '.java', '.cpp', '.js', '.php', '.cs', '.rb', '.go')
@@ -189,6 +188,12 @@ def garbage_deleter(dir_name):
 
 def main():
     path_to_file = input('Enter a path to file contains info about repos: ')
+    trans = FileTransformer()
+    number_rows_file = trans.info_source_file(path_to_file)
+    if number_rows_file > 5000:
+        new_df = trans.create_new_data_frame()
+        path_to_file = trans.create_file_csv(new_df)
+        logging.warning("New file was created")
     dir_name = input('Enter a path to folder where repos will be saved: ')
     user_name = input('Enter gitHub user_login: ')
     user_passw = input('Enter gitHub user_password: ')
