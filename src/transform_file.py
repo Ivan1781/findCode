@@ -3,10 +3,14 @@ import os
 import pandas as pd
 
 
+# The class contains functions for working with a file. A file may contain a
+# large number of rows. For this reason, the file must be shortened.
 class FileTransformer:
     df = 0
     number_of_rows = 0
 
+    # The method returns a number of rows files. The path to the file is
+    # specified as a parameter.
     def info_source_file(self, path_to_file):
         self.df = pd.read_csv(os.path.abspath(path_to_file), error_bad_lines=False,
                               header=None, index_col=False)
@@ -14,6 +18,9 @@ class FileTransformer:
         logging.info(f'Your file contains {self.number_of_rows} rows')
         return self.number_of_rows
 
+    # The method creates a new data_frame from the source CSV file. The user enters
+    # row numbers which are contain in the source file. Everything rows between those
+    # rows will become a new data frame which is returned by method.
     def create_new_data_frame(self):
         logging.info(f" It's necessary to cut the file.")
         try:
@@ -28,7 +35,9 @@ class FileTransformer:
         except ValueError:
             logging.exception("It's not correct values")
 
-
+    # The method creates a new source csv file from pandas data_frame whose size is
+    # satisfactory. For default a new file will be named as a 'newSource.csv' and will
+    # be saved in a directory which is specified by user.
     def create_file_csv(self, data_fr, new_source_file='newSource.csv'):
         new_path_to_file = input("Enter a new path: ")
         if not os.path.exists(new_path_to_file):

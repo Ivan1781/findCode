@@ -118,7 +118,9 @@ class Stargazer:
             self.logger.exception('Adding star column was failed')
             return -1
 
-
+# The function transforms api url in normal view.
+# The function is necessary for downloading repository
+# with def download_repo(...)
 def transform_url(url):
     url = url.split('/')
     url.pop(2)
@@ -128,6 +130,11 @@ def transform_url(url):
     return url
 
 
+# The function downloads a repository. The first argument is a path to file .csv
+# contains repository references. The second argument is a path to directory in which
+# repository will be downloaded. If the path is missing then it will be created.
+# After ending of downloading the garbage deleter starts and deletes everything
+# unnecessary files
 def download_repo(path_file_csv, to_path):
     logging.basicConfig(level=logging.INFO)
     logging.info('Repositories download started')
@@ -160,6 +167,7 @@ def download_repo(path_file_csv, to_path):
                 pass
 
 
+# The function creates a list of files that are in a directory.
 def get_list_of_files(dir_name):
     list_dir = os.listdir(os.path.join(dir_name))
     all_files = list()
@@ -172,11 +180,15 @@ def get_list_of_files(dir_name):
     return all_files
 
 
-def garbage_deleter(dir_name):
+# The function deletes everything file in directory. The path to directory
+# is specified at first argument. The second argument is a tuple contains a file
+# extensions which will be saved in a directory. The rest of files will
+# be deleted.
+def garbage_deleter(dir_name, languages=(
+        '.py', '.java', '.cpp', '.js', '.php', '.cs', '.rb', '.go')):
     logging.basicConfig(level=logging.INFO)
     logging.info('delete unnecessary files')
     list_files = get_list_of_files(dir_name)
-    languages = ('.py', '.java', '.cpp', '.js', '.php', '.cs', '.rb', '.go')
     list_files = filter(lambda s: not s.endswith(languages), list_files)
     for file in list_files:
         if os.path.exists(file):
@@ -187,26 +199,3 @@ def garbage_deleter(dir_name):
                 os.remove(file)
     logging.info('Deleting is ended')
     return list_files
-
-
-def main(number_requests=5000):
-    path_to_file = input('Enter a path to file contains info about repos: ')
-    trans = FileTransformer()
-    number_rows_file = trans.info_source_file(path_to_file)
-    if number_rows_file > number_requests:
-        new_df = trans.create_new_data_frame()
-        path_to_file = trans.create_file_csv(new_df)
-        logging.warning("New file was created")
-    dir_name = input('Enter a path to folder where repos will be saved: ')
-    user_name = input('Enter gitHub user_login: ')
-    user_passw = getpass.getpass('Enter gitHub user_password: ')
-    star = Stargazer(path_to_file)
-    star.get_user(user_name, user_passw)
-    df = star.get_file_csv()
-    star.star_count(df)
-    star.add_column_to_csv(df)
-    download_repo(path_to_file, dir_name)
-
-
-if __name__ == '__main__':
-    main()
