@@ -1,9 +1,10 @@
-import os
-import requests
-import pandas as pd
 import csv
-from git import Repo
+import getpass
 import logging
+import os
+from git import Repo
+import pandas as pd
+import requests
 from transform_file import FileTransformer
 
 
@@ -137,21 +138,20 @@ def download_repo(path_file_csv, to_path):
         reader = csv.reader(file_repo)
         for row in reader:
             if 3 > int(row[len(row) - 1]) >= 0:
-                print('*************************************')
                 url = transform_url(row[0])
                 logging.info(f'url of downloading repo is {url}')
                 name_repo = url.split('/')
                 repo = name_repo.pop(len(name_repo) - 1)
-                path1 = to_path + '/' + repo
+                path_to_repo = os.path.join(to_path, repo)
                 try:
-                    os.mkdir(path1)
-                    logging.warning(f'Download repo to {path1}')
-                    repo = Repo.clone_from(url, path1)
-                    logging.info(f'Repo {path1} was created')
+                    os.mkdir(path_to_repo)
+                    logging.warning(f'Download repo to {path_to_repo}')
+                    repo = Repo.clone_from(url, path_to_repo)
+                    logging.info(f'Repo {path_to_repo} was created')
                 except Exception:
                     logging.exception('Downloading a repo failed')
                     pass
-                garbage_deleter(path1)
+                garbage_deleter(path_to_repo)
             else:
                 pass
 
@@ -182,7 +182,6 @@ def garbage_deleter(dir_name):
                 os.chmod(file, 0o777)
                 os.remove(file)
     logging.info('Deleting is ended')
-    print('*************************************')
     return list_files
 
 
@@ -196,7 +195,7 @@ def main():
         logging.warning("New file was created")
     dir_name = input('Enter a path to folder where repos will be saved: ')
     user_name = input('Enter gitHub user_login: ')
-    user_passw = input('Enter gitHub user_password: ')
+    user_passw = getpass.getpass('Enter gitHub user_password: ')
     star = Stargazer(path_to_file)
     star.get_user(user_name, user_passw)
     df = star.get_file_csv()
