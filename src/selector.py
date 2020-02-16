@@ -8,11 +8,10 @@ import requests
 from transform_file import FileTransformer
 
 
-# The task of the class is to count  the stars of the repositories, the list of which lies in
-# the .csv file and add to this file a new column containing the number of stars of
-# the repository
-# We send the path to the constructor to the file where the links to the gitHub repositories
-# are stored.
+# The task of the class is to count  the stars of the repositories, the list
+# of which lies in the .csv file and add to this file a new # column containing
+# the number of stars of the repository. We send the path to the constructor
+# to the file where the links to the gitHub repositories are stored.
 class Stargazer:
     __list_of_star = []
     __length_of_column = 0
@@ -34,18 +33,20 @@ class Stargazer:
         return self.__list_of_star 
 
     # The get_user() method receives user login and password, then returns tuple
-    # and saves it in the __login_passwd field. This is then required to send an authorized
-    # request to gitHub.
+    # and saves it in the __login_passwd field. This is then required
+    # to send an authorized request to gitHub.
     def get_user(self, name, passw):
         list_name_passw = [name, passw]
         self.logger.info('user_name and password is defined')
         self.logger.info(f'your password is {passw}')
         self.__login_passwd = tuple(list_name_passw)
 
-    # The method returns a DataFrame that contains information from a file with a list of repositories
+    # The method returns a DataFrame that contains information from a file with
+    # a list of repositories
     def get_file_csv(self):
         try:
-            df = pd.read_csv(os.path.abspath(self.__path_to_file), error_bad_lines=False, header=None,
+            df = pd.read_csv(os.path.abspath(self.__path_to_file),
+                             error_bad_lines=False, header=None,
                              index_col=False)
             self.__length_of_column = df.shape[0]
             self.logger.info('The file is converted into data_frame')
@@ -54,10 +55,11 @@ class Stargazer:
             self.logger.exception('The convertion failed')
             return -1
 
-    # The method receives a DataFrame, which is returned by the get_file_csv () method.
-    # Next, the DataFrame is crawled. Requests are sent to the links contained in the dataFrame.
-    # If the repository is empty, then the line is filled with the values 'Not', and
-    # the value '-1' is set in the column 'stars'. All data is saved to the list __list_of_star = [].
+    # The method receives a DataFrame, which is returned by the get_file_csv ()
+    # method. Next, the DataFrame is crawled. Requests are sent to the links
+    # contained in the dataFrame. If the repository is empty, then the line is
+    # filled with the values 'Not', and # the value '-1' is set in the column
+    # 'stars'. All data is saved to the list __list_of_star = [].
     def star_count(self, df):
         count = 0
         r = 0
@@ -74,7 +76,8 @@ class Stargazer:
                     self.logger.warning('Status of question is 404')
                     raise requests.RequestException
                 elif r.status_code == 401 or r.status_code == 403:
-                    self.logger.warning('Status of question is 401 or 403. Server refuse to repspond')
+                    self.logger.warning('Status of question is 401 or 403. '
+                                        'Server refuse to repspond')
                     raise requests.RequestException
                 else:
                     self.logger.info('The request is successful')
@@ -134,7 +137,8 @@ def download_repo(path_file_csv, to_path):
             logging.info(f'The {to_path} directory was created')
         except OSError:
             logging.exception('Path to directory is not correct')
-    with open(os.path.abspath(path_file_csv), 'r', encoding='utf_8_sig') as file_repo:
+    with open(os.path.abspath(path_file_csv), 'r', encoding='utf_8_sig') \
+            as file_repo:
         reader = csv.reader(file_repo)
         for row in reader:
             if 3 > int(row[len(row) - 1]) >= 0:
@@ -185,11 +189,11 @@ def garbage_deleter(dir_name):
     return list_files
 
 
-def main():
+def main(number_requests=5000):
     path_to_file = input('Enter a path to file contains info about repos: ')
     trans = FileTransformer()
     number_rows_file = trans.info_source_file(path_to_file)
-    if number_rows_file > 5000:
+    if number_rows_file > number_requests:
         new_df = trans.create_new_data_frame()
         path_to_file = trans.create_file_csv(new_df)
         logging.warning("New file was created")
