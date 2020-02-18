@@ -1,4 +1,5 @@
 import getpass
+import download_clean as dc
 import selector as sel
 import transform_file as tran
 
@@ -18,7 +19,7 @@ def main(number_requests=5000):
     df = star.get_file_csv()
     star.star_count(df)
     star.add_column_to_csv(df)
-    sel.download_repo(path_to_file, dir_name)
+    dc.download_repo(path_to_file, dir_name)
 
 
 if __name__ == '__main__':
