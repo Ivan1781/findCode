@@ -9,7 +9,7 @@ import requests
 # the number of stars of the repository. We send the path to the constructor
 # to the file where the links to the gitHub repositories are stored.
 class Stargazer:
-    __list_of_star = []
+    __list_of_values = []
     __length_of_column = 0
     __path_to_file = 0
     __login_passwd = 0
@@ -26,7 +26,7 @@ class Stargazer:
         self.logger.info('Instance of Stargazer is created')
 
     def list_of_star(self):
-        return self.__list_of_star 
+        return self.__list_of_values
 
     # The get_user() method receives user login and password, then returns tuple
     # and saves it in the __login_passwd field. This is then required
@@ -56,7 +56,7 @@ class Stargazer:
     # contained in the dataFrame. If the repository is empty, then the line is
     # filled with the values 'Not', and # the value '-1' is set in the column
     # 'stars'. All data is saved to the list __list_of_star = [].
-    def star_count(self, df, key_name='stargazers_count'):
+    def star_count(self, df):
         key_name = input('Enter a key: ')
         count = 0
         r = 0
@@ -79,13 +79,13 @@ class Stargazer:
                 else:
                     self.logger.info('The request is successful')
                     jso = r.json()
-                    star = jso.get(key_name)
-                    self.logger.info(f'This repo has {star} {key_name}')
-                    self.__list_of_star.append(star)
+                    value_of_key = jso.get(key_name)
+                    self.logger.info(f'This repo has {value_of_key} {key_name}')
+                    self.__list_of_values.append(value_of_key)
             except requests.RequestException:
                 if r.status_code == 404:
                     self.logger.exception('Repository was not found')
-                    self.__list_of_star.append(-1)
+                    self.__list_of_values.append(-1)
                     not_complete = {}
                     for a in range(df.shape[1]):
                         not_complete[a] = 'Not'
@@ -93,22 +93,22 @@ class Stargazer:
                 else:
                     break
             finally:
-                self.logger.info(f'The {key_name} was added to list {self.__list_of_star}')
+                self.logger.info(f'The {key_name} was added to list {self.__list_of_values}')
                 count += 1
 
-        d = self.__length_of_column - len(self.__list_of_star)
+        d = self.__length_of_column - len(self.__list_of_values)
         while d > 0:
-            self.__list_of_star.append(-2)
+            self.__list_of_values.append(-2)
             d -= 1
 
     # Record filled __list_of_star = [] containing the number
     # repository stars to the original csv file with repositories.
     def add_column_to_csv(self, df):
-        df[df.shape[1]] = self.__list_of_star
+        df[df.shape[1]] = self.__list_of_values
         try:
             self.logger.warning('Adding a new star column to the source file')
             df.to_csv(self.__path_to_file, index=False, header=None)
-            self.logger.info(f'List of stars: {self.__list_of_star}')
+            self.logger.info(f'List of stars: {self.__list_of_values}')
             self.logger.info('Adding star column was successful')
             return True
         except IOError:
