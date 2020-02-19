@@ -1,9 +1,7 @@
 import getpass
 import download_clean as dc
 import selector as sel
-import transform_file as tran
-
-
+import transform_file a
 def main(number_requests=5000):
     path_to_file = input('Enter a path to file contains info about repos: ')
     trans = tran.FileTransformer()
