@@ -56,10 +56,11 @@ class Stargazer:
     # contained in the dataFrame. If the repository is empty, then the line is
     # filled with the values 'Not', and # the value '-1' is set in the column
     # 'stars'. All data is saved to the list __list_of_star = [].
-    def star_count(self, df):
+    def star_count(self, df, key_name='stargazers_count'):
+        key_name = input('Enter a key: ')
         count = 0
         r = 0
-        self.logger.info('Counting of stars is starting')
+        self.logger.info(f'Collection of {key_name} is starting')
         while count < self.__length_of_column:
             if df[0][count] == '0' or df[0][count] == 'nan':
                 count += 1
@@ -78,8 +79,8 @@ class Stargazer:
                 else:
                     self.logger.info('The request is successful')
                     jso = r.json()
-                    star = jso.get('stargazers_count')
-                    self.logger.info(f'This repo has {star} stars')
+                    star = jso.get(key_name)
+                    self.logger.info(f'This repo has {star} {key_name}')
                     self.__list_of_star.append(star)
             except requests.RequestException:
                 if r.status_code == 404:
@@ -92,7 +93,7 @@ class Stargazer:
                 else:
                     break
             finally:
-                self.logger.info(f'The star was added to list {self.__list_of_star}')
+                self.logger.info(f'The {key_name} was added to list {self.__list_of_star}')
                 count += 1
 
         d = self.__length_of_column - len(self.__list_of_star)

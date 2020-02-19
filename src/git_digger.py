@@ -17,9 +17,15 @@ def main(number_requests=5000):
     star = sel.Stargazer(path_to_file)
     star.get_user(user_name, user_passw)
     df = star.get_file_csv()
+    # ---------------------
     star.star_count(df)
     star.add_column_to_csv(df)
-    dc.download_repo(path_to_file, dir_name)
+    # ---------------------
+    download_repo = input('To download repos? : ')
+    if download_repo == 'y':
+        dc.download_repo(path_to_file, dir_name)
+    else:
+        pass
 
 
 if __name__ == '__main__':
