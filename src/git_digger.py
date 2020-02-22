@@ -1,7 +1,9 @@
 import getpass
 import download_clean as dc
 import selector as sel
-import transform_file a
+import transform_file as tran
+
+
 def main(number_requests=5000):
     path_to_file = input('Enter a path to file contains info about repos: ')
     trans = tran.FileTransformer()
@@ -24,6 +26,9 @@ def main(number_requests=5000):
         dc.download_repo(path_to_file, dir_name)
     else:
         pass
+    print(dc.DataCollector.df)
+    e = dc.DataCollector()
+    dc.DataCollector.create_statist_file(dir_name)
 
 
 if __name__ == '__main__':
