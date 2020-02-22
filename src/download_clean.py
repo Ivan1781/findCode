@@ -2,6 +2,18 @@ import csv
 import logging
 import os
 from git import Repo
+import pandas as pd
+import get_statistics as gs
+
+
+class DataCollector:
+    df = pd.DataFrame(columns=['rows', 'numbers_files', 'technologies'])
+
+    @staticmethod
+    def create_statist_file(path, name_stat='statisticFile.csv'):
+        DataCollector.df.to_csv(os.path.join(path, name_stat), index=False)
+        print('OK')
+
 
 # The function transforms api url in normal view.
 # The function is necessary for downloading repository
@@ -23,6 +35,7 @@ def transform_url(url):
 def download_repo(path_file_csv, to_path):
     logging.basicConfig(level=logging.INFO)
     logging.info('Repositories download started')
+
     if not os.path.exists(to_path):
         try:
             os.mkdir(to_path)
@@ -48,6 +61,12 @@ def download_repo(path_file_csv, to_path):
                     logging.exception('Downloading a repo failed')
                     pass
                 garbage_deleter(path_to_repo)
+                list_rest_files = get_list_of_files(path_to_repo)
+                rows_repo = gs.to_count_rows_in_repo(list_rest_files)
+                numbers_files = gs.numbers_of_files_repo(path_to_repo)
+                technologies = gs.technologies_of_project(list_rest_files)
+                datas = [rows_repo, numbers_files, technologies]
+                DataCollector.df.loc[len(DataCollector.df)] = datas
             else:
                 pass
 
@@ -70,11 +89,13 @@ def get_list_of_files(dir_name):
 # extensions which will be saved in a directory. The rest of files will
 # be deleted.
 def garbage_deleter(dir_name, languages=(
-        '.py', '.java', '.cpp', '.js', '.php', '.cs', '.rb', '.go')):
+        '.py', '.pyc', '.pyo', '.pyd', '.whl', '.java', '.j', '.jav', '.cpp',
+        '.cxx', '.c', '.cc', '.h', '.js', '.php', '.phps', '.cs', '.rb', '.rbw', '.go')):
     logging.basicConfig(level=logging.INFO)
     logging.info('delete unnecessary files')
     list_files = get_list_of_files(dir_name)
     list_files = filter(lambda s: not s.endswith(languages), list_files)
+    print(list_files)
     for file in list_files:
         if os.path.exists(file):
             try:
