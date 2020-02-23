@@ -79,7 +79,10 @@ class Stargazer:
                 else:
                     self.logger.info('The request is successful')
                     jso = r.json()
-                    value_of_key = jso.get(key_name)
+                    if jso.get('parent'):
+                        value_of_key = jso.get('parent').get(key_name)
+                    else:
+                        value_of_key = jso.get(key_name)
                     self.logger.info(f'This repo has {value_of_key} {key_name}')
                     self.__list_of_values.append(value_of_key)
             except requests.RequestException:
