@@ -1,10 +1,12 @@
 import csv
 import logging
+import logging.config
 import os
 from git import Repo
 import pandas as pd
 import get_statistics as gs
 
+logging.config.fileConfig(fname='logg_config.conf', disable_existing_loggers=False)
 
 class DataCollector:
     df = pd.DataFrame(columns=['rows', 'numbers_files', 'technologies'])

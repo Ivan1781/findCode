@@ -1,4 +1,5 @@
 import logging
+import logging.config
 import os
 import pandas as pd
 import requests
@@ -16,13 +17,8 @@ class Stargazer:
 
     def __init__(self, path):
         self.__path_to_file = path
-        self.logger = logging.getLogger('STARGAZER')
-        self.logger.setLevel(logging.INFO)
-        handler = logging.StreamHandler()
-        handler.setLevel(logging.INFO)
-        formatter = logging.Formatter('%(levelname)s : %(name)s : %(message)s')
-        handler.setFormatter(formatter)
-        self.logger.addHandler(handler)
+        logging.config.fileConfig(fname='logg_config.conf', disable_existing_loggers=False)
+        self.logger = logging.getLogger('selectorLogger')
         self.logger.info('Instance of Stargazer is created')
 
     def list_of_star(self):
